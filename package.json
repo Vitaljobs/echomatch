@@ -1,0 +1,36 @@
+{
+  "name": "echomatch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "autoprefixer": "^10.4.22",
+    "lucide-react": "^0.556.0",
+    "next": "^14.0.0",
+    "postcss": "^8.5.6",
+    "prisma": "^6.19.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.18",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.7"
+  }
+}
