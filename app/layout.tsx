@@ -1,6 +1,8 @@
 import React from 'react';
 import { AppShell } from '../components/AppShell';
 import './globals.css';
+import MeldButton from '../components/MeldButton';
+
 
 export const metadata = {
   title: 'EchoMatch - Anonieme Ideeën',
@@ -12,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl">
       <body>
         <AppShell>{children}</AppShell>
+        <MeldButton />
       </body>
     </html>
   );

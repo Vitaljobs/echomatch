@@ -1,23 +1,30 @@
-import React from 'react';
-
-interface EchoCardProps {
-  id: string;
+type Echo = {
+  id: number;
   content: string;
-  tag?: string;
-}
+  tag: string | null;
+  createdAt: Date;
+};
 
-export function EchoCard({ id, content, tag }: EchoCardProps) {
+type EchoCardProps = {
+  echo?: Echo;
+};
+
+export function EchoCard({ echo }: EchoCardProps) {
+  if (!echo) {
+    return null; // of een skeleton/placeholder
+  }
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-purple-500 transition-colors duration-300 shadow-sm">
-      <p className="text-slate-100 text-lg mb-4 whitespace-pre-wrap leading-relaxed">{content}</p>
-      <div className="flex justify-between items-center text-sm">
-        <span className="text-slate-500 font-mono">Echo #{id}</span>
-        {tag && (
-          <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-400 text-xs font-medium border border-slate-700">
-            {tag}
-          </span>
-        )}
-      </div>
-    </div>
+    <article className="rounded-xl bg-slate-900/60 border border-slate-800 px-4 py-3">
+      <p className="text-slate-100 text-sm whitespace-pre-line">
+        {echo.content}
+      </p>
+      {echo.tag && (
+        <p className="mt-2 text-xs text-purple-300">#{echo.tag}</p>
+      )}
+      <p className="mt-1 text-[11px] text-slate-500">
+        Echo #{echo.id}
+      </p>
+    </article>
   );
 }

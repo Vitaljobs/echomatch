@@ -55,6 +55,13 @@ export function AppShell({ children }: AppShellProps) {
       {/* Middenkolom */}
       <main className="flex-1 px-8 py-10 md:ml-64">
         {children}
+
+        <footer className="mt-8 border-t border-slate-800 pt-4 text-xs text-slate-500 flex flex-wrap gap-4">
+          <a href="/about" className="hover:text-slate-300">Over EchoMatch</a>
+          <a href="/privacy" className="hover:text-slate-300">Privacy</a>
+          <a href="/terms" className="hover:text-slate-300">Voorwaarden</a>
+          <a href="/contact" className="hover:text-slate-300">Contact</a>
+        </footer>
       </main>
     </div>
   );

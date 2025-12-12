@@ -1,6 +1,7 @@
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -8,8 +9,101 @@ generator client {
 }
 
 model Echo {
-  id        Int      @id @default(autoincrement())
-  content   String
-  tag       String?
+  id         Int         @id @default(autoincrement())
+  content    String
+  title      String?     // ← deze regel toevoegen
+  tag        String?
+  status     EchoStatus  @default(ACTIVE)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  expiresAt  DateTime?
+
+  sourceId   String?
+  source     Source?     @relation(fields: [sourceId], references: [id])
+
+  reports    Report[]
+}
+
+enum EchoStatus {
+  ACTIVE
+  HIDDEN
+  DELETED
+}
+
+model Source {
+  id         String   @id @default(cuid())
+  ipHash     String   @unique
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  echoes     Echo[]
+  blocks     BlockedSource[]
+}
+
+model BlockedSource {
+  id               String   @id @default(cuid())
+  sourceId         String
+  source           Source   @relation(fields: [sourceId], references: [id])
+  reason           String
+  createdAt        DateTime @default(now())
+  expiresAt        DateTime?
+
+  createdByAdminId String?
+  createdByAdmin   AdminUser? @relation("CreatedBlocks", fields: [createdByAdminId], references: [id])
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  echoId      Int
+  echo        Echo         @relation(fields: [echoId], references: [id])
+  reason      ReportReason
+  details     String?
+  status      ReportStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  handledAt   DateTime?
+
+  handledByAdminId String?
+  handledByAdmin   AdminUser? @relation("HandledReports", fields: [handledByAdminId], references: [id])
+}
+
+enum ReportReason {
+  HATE
+  THREAT
+  SPAM
+  SELF_HARM
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(MODERATOR)
+
+  logs          AdminLog[]
+  createdBlocks BlockedSource[] @relation("CreatedBlocks")
+  handledReports Report[]       @relation("HandledReports")
+}
+
+enum AdminRole {
+  SUPERADMIN
+  MODERATOR
+}
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     AdminUser @relation(fields: [adminId], references: [id])
+
+  action    String
+  echoId    Int?
+  sourceId  String?
   createdAt DateTime @default(now())
 }

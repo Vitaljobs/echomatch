@@ -1,171 +1,117 @@
-import Link from 'next/link';
-import { PostForm } from '@/components/PostForm';
+import { prisma } from '@/lib/prisma';
 import { EchoCard } from '@/components/EchoCard';
 
-const dummyEchoes = [
-  { id: 1, content: 'Eerste test-echo', tag: 'test' },
-  { id: 2, content: 'Ik voel me vandaag verrassend rustig na een drukke week.', tag: 'gevoel' },
-  { id: 3, content: 'Twijfel over mijn werkrichting, maar kleine stappen helpen.', tag: 'werk' },
-];
+export default async function Home() {
+  const echoes = await prisma.echo.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  });
 
-export default function Home() {
+  const topEchoes = echoes.slice(0, 3);
+  const latestEchoes = echoes.slice(0, 9);
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50">
-      {/* Hero */}
-      <section className="border-b border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-6 py-12 lg:px-10 lg:py-16">
-        <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-2 lg:items-center">
-          {/* Hero text */}
-          <div className="space-y-6">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-300/80">
-              EchoMatch
-            </p>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-              Alle echo’s over jouw wereld
-              <span className="block bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                in één rustige feed.
-              </span>
-            </h1>
-            <p className="text-base sm:text-lg text-slate-300 max-w-xl">
-              EchoMatch is een rustige plek voor anonieme mini-dagboekzinnen.
-              Volg gedachten en gevoelens van mensen zoals jij, ontdek patronen
-              rond werk, relaties en groei, en deel je eigen echo’s zonder druk.
-            </p>
+    <>
+      {/* HERO */}
+      <section className="min-h-[70vh] bg-gradient-to-br from-slate-950 via-purple-950/60 to-indigo-950/60 flex flex-col items-center justify-center text-white py-16 px-6">
+        <div className="max-w-2xl text-center space-y-6 animate-fade-in-up">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight">
+            Deel je gedachten veilig.<br />
+            Vind herkenning in echo&apos;s van anderen.
+          </h1>
+          <p className="text-base md:text-lg text-slate-300">
+            EchoMatch is een anonieme plek om twijfels, zorgen en ervaringen te delen, 
+            zonder oordeel – zodat je ziet dat je niet alleen bent.
+          </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link
-                href="/explore"
-                className="inline-flex items-center justify-center rounded-xl bg-violet-500 px-6 py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-600"
-              >
-                Echo’s verkennen
-              </Link>
-              <a
-                href="#mijn-echos"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-900/60 px-6 py-3 text-sm sm:text-base font-semibold text-slate-100 transition hover:bg-slate-800/80"
-              >
+          {/* CTA KNOPPEN */}
+          <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
+            {/* Start echo */}
+            <a
+              href="/echo/new"
+              className="relative inline-flex items-center justify-center px-8 py-3 text-lg font-semibold text-white rounded-full transition-all duration-300 hover:scale-105 hover:-translate-y-0.5"
+            >
+              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 blur-md opacity-70 transition-opacity"></span>
+              <span className="relative rounded-full bg-slate-950/60 px-8 py-3 border border-white/10">
                 Start een echo
-              </a>
-            </div>
+              </span>
+            </a>
 
-            <ul className="mt-2 space-y-1 text-sm text-slate-400">
-              <li>• Anoniem delen zonder oordeel.</li>
-              <li>• Zie echo’s rond thema’s als werk, relaties en groei.</li>
-              <li>• Bouw langzaam aan een eerlijker beeld van je wereld.</li>
-            </ul>
+            {/* Explore */}
+            <a
+              href="/explore"
+              className="px-8 py-3 rounded-full text-lg font-medium text-slate-100 bg-slate-900/60 border border-white/10 backdrop-blur-xl shadow-lg hover:bg-slate-800/80 hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 text-center"
+            >
+              Echo&apos;s verkennen
+            </a>
+          </div>
+        </div>
+
+        {/* TOP 3 ECHOS */}
+        <div className="w-full max-w-5xl mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up animation-delay-300">
+          {topEchoes.map((echo, i) => (
+            <div
+              key={echo.id}
+              className={`group p-6 rounded-3xl shadow-xl hover:scale-105 transition-all duration-500 cursor-pointer
+              bg-slate-900/70 border border-white/10 backdrop-blur-xl animate-bounce-card ${`animation-delay-${i * 200}`}`}
+            >
+              <h3 className="text-lg font-semibold text-white mb-1 group-hover:-translate-y-0.5 transition-transform">
+                {echo.title || 'Top Echo'}
+              </h3>
+              <p className="text-sm text-slate-300 mb-3">
+                Hot spot vandaag 🔥
+              </p>
+              <p className="text-xs text-slate-400">
+                {new Date(echo.createdAt).toLocaleDateString('nl-NL', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}{' '}
+                –{' '}
+                {new Date(echo.createdAt).toLocaleTimeString('nl-NL', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Echo ID: {echo.id}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* LAATSTE ECHOS + BULLETS */}
+      <section className="py-12 bg-slate-950/70">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-8 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Laatste echo&apos;s
+          </h2>
+
+          {/* GRID MET LAATSTE ECHOS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 animate-fade-in-up">
+            {latestEchoes.map((echo) => (
+              <EchoCard key={echo.id} echo={echo} />
+            ))}
           </div>
 
-          {/* Hero preview */}
-          <div className="hidden lg:block">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-2xl shadow-violet-500/20">
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-200">
-                  Laatste echo’s
-                </p>
-                <span className="rounded-full bg-violet-500/10 px-3 py-1 text-xs font-medium text-violet-300">
-                  Live preview
-                </span>
-              </div>
-              <div className="space-y-3">
-                {dummyEchoes.slice(0, 3).map((echo) => (
-                  <EchoCard
-                    key={echo.id}
-                    id={echo.id.toString()}
-                    content={echo.content}
-                    tag={echo.tag}
-                  />
-                ))}
-              </div>
+          {/* BULLETS: ANONIEM / VEILIG / COMMUNITY */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm md:text-base text-slate-200">
+            <div className="bg-slate-900/70 border border-white/10 rounded-2xl p-4">
+              <h3 className="font-semibold mb-1">Anoniem</h3>
+              <p>Je identiteit wordt niet getoond; je deelt volledig anoniem.</p>
+            </div>
+            <div className="bg-slate-900/70 border border-white/10 rounded-2xl p-4">
+              <h3 className="font-semibold mb-1">Veilig</h3>
+              <p>Meldingen en moderatie houden misbruik en schadelijke content tegen.</p>
+            </div>
+            <div className="bg-slate-900/70 border border-white/10 rounded-2xl p-4">
+              <h3 className="font-semibold mb-1">Community</h3>
+              <p>Lees echo&apos;s van anderen en ontdek dat je niet alleen staat.</p>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Discover + echte feed */}
-      <main className="px-6 py-10 lg:px-10 lg:py-12">
-        <div className="max-w-4xl mx-auto space-y-10">
-          {/* Discover-blok */}
-          <section className="space-y-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-slate-100">
-                  Discover Echo’s
-                </h2>
-                <p className="text-sm text-slate-400">
-                  Verken wat anderen delen en vind echo’s die met jou resoneren.
-                </p>
-              </div>
-            </div>
-
-            {/* Echo van de dag */}
-            <div className="grid gap-4 lg:grid-cols-[2fr,1.2fr]">
-              <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-violet-300 mb-2">
-                  Echo van de dag
-                </p>
-                <EchoCard
-                  id="featured-1"
-                  content="Soms voelt het alsof iedereen al weet wat hij wil, en ik nog aan het zoeken ben."
-                  tag="twijfel"
-                />
-              </div>
-
-              {/* Trending tags */}
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-300 mb-3">
-                  Trending tags
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {['werk', 'relatie', 'stress', 'groei', 'eenzaamheid'].map((tag) => (
-                    <button
-                      key={tag}
-                      className="rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1 text-xs font-medium text-slate-200 hover:border-violet-500 hover:text-violet-300"
-                    >
-                      #{tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Featured echo’s grid */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-300">
-                  Featured echo’s
-                </p>
-                <span className="text-xs text-slate-500">Geselecteerd voor jou</span>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {dummyEchoes.map((echo) => (
-                  <EchoCard
-                    key={echo.id}
-                    id={echo.id.toString()}
-                    content={echo.content}
-                    tag={echo.tag}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Jouw eigen echo-feed (PostForm + lijst) */}
-          <section id="mijn-echos" className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-100">
-              Jouw echo’s
-            </h2>
-            <PostForm />
-            <div className="space-y-3">
-              {dummyEchoes.map((echo) => (
-                <EchoCard
-                  key={echo.id}
-                  id={echo.id.toString()}
-                  content={echo.content}
-                  tag={echo.tag}
-                />
-              ))}
-            </div>
-          </section>
-        </div>
-      </main>
-    </div>
+    </>
   );
 }
