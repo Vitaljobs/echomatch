@@ -18,30 +18,54 @@ enum VibeStatus {
 
 
 model User {
-  id            String      @id @default(cuid())
-  email         String      @unique
-  name          String?
-  sentVibes     VibeChain[] @relation("Sender")
-  receivedVibes VibeChain[] @relation("Receiver")
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  vibeStatus VibeStatus @default(PENDING)
+  vibes     Vibe[]
+  createdAt DateTime @default(now())
+}
+
+model Vibe {
+  id          String   @id @default(cuid())
+  userId      String
+  matchId     String?
+  status      VibeStatus @default(PENDING)
+  audioUrl    String?
+  duration    Int
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
 }
 
 model VibeChain {
   id          String     @id @default(cuid())
-  
   senderId    String
-  sender      User       @relation("Sender", fields: [senderId], references: [id])
-  
   receiverId  String
-  receiver    User       @relation("Receiver", fields: [receiverId], references: [id])
-  
   status      VibeStatus @default(PENDING)
   voice1Url   String? // 30sec intro
   voice2Url   String? // 10sec reactie
   voice3Url   String? // 20sec finale
   syncScore   Float?
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
 
   @@unique([senderId, receiverId])
+}
+model Profile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  name         String
+  age          Int
+  interests    String[]
+  dailyVoices  Int      @default(1)
+  dailyListens Int      @default(3)
+  createdAt    DateTime @default(now())
+}
+
+model VoiceMessage {
+  id         String     @id @default(cuid())
+  senderId   String
+  receiverId String?
+  status     VibeStatus @default(PENDING)
+  audioUrl   String?
+  createdAt  DateTime   @default(now())
 }
