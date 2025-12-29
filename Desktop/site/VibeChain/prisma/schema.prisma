@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VibeStatus {
+  PENDING
+  VOICE1_SENT
+  VOICE2_RECEIVED
+  VOICE3_SENT
+  SYNCED
+  SKIPPED
+}
+
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String?
+  sentVibes     VibeChain[] @relation("Sender")
+  receivedVibes VibeChain[] @relation("Receiver")
+  createdAt     DateTime    @default(now())
+}
+
+model VibeChain {
+  id          String     @id @default(cuid())
+  
+  senderId    String
+  sender      User       @relation("Sender", fields: [senderId], references: [id])
+  
+  receiverId  String
+  receiver    User       @relation("Receiver", fields: [receiverId], references: [id])
+  
+  status      VibeStatus @default(PENDING)
+  voice1Url   String? // 30sec intro
+  voice2Url   String? // 10sec reactie
+  voice3Url   String? // 20sec finale
+  syncScore   Float?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([senderId, receiverId])
+}
