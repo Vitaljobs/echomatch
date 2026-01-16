@@ -22,7 +22,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## ZeroGauge ProSport
 
-Last deployment: 2026-01-16 21:36 CET
+Last deployment: 2026-01-16 21:57 CET (Next.js 16.1.3)
 
 ## Learn More
 
