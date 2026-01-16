@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DailyWellness {
+  id                String   @id @default(cuid())
+  playerId          String
+  date              DateTime
+  sessionType       String
+  sessionLoad       Int      // Also used for RPE
+  
+  // Performance and Recovery
+  sleepHours        Float?
+  sleepKwaliteit    Int?     // 1-5
+  pijn              Int?     // 0-10
+  energie           Int?     // 1-5
+  stemming          Int?     // 1-5
+  hydratatie        Int?     // 1-5
+  voeding           Int?     // 1-5
+  
+  // Detail recovery
+  sleepBedtime      String?
+  sleepWakeTime     String?
+  lastMealTime      String?
+  hydrationIntake   Float?   // in glazen/liters
+  urineColorMorning Int?
+  urineColorEvening Int?
+  nightAwakenings   Int?
+  
+  notes             String?
+  coachFeedback     String?  // Feedback from coach on this specific check-in
+  riskScore         Int?     // Optioneel cache van de score
+  
+  createdAt         DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  messages Message[] // Back-relation for linked pulses
+  @@unique([playerId, date])
+}
+
+model MatchReport {
+  id               String   @id @default(cuid())
+  playerId         String
+  matchId          String? // externe match referentie
+  date             DateTime
+  minutesPlayed    Int?
+  matchLoad        Int? // RPE 0-10
+  postGameSoreness Int? // 0-10
+  mentalFatigue    Int? // 1-5
+  notes            String?
+  createdAt         DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model RehabSession {
+  id                  String   @id @default(cuid())
+  playerId            String
+  date                DateTime
+  sessionType         String? // "kracht", "loop", "veld"
+  sessionIntensity    Int? // zwaarte 1-10
+  painStartMoment     String? // "squat fase 3"
+  painScore           Int? // 0-10
+  reactionNextDay     String? // "geen", "stijf", "pijn"
+  preInjuryTestValues Json? // {"squat": "80kg", "hop": "2.5m"}
+  notes               String?
+  createdAt           DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+// User model for Authentication
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // hashed password
+  role      Role     @default(PLAYER)
+  photoUrl  String?
+  playerId  String?  @unique
+  player    Player?  @relation(fields: [playerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+}
+
+enum Role {
+  PLAYER
+  COACH
+}
+
+// Speler profiel
+model Player {
+  id            String          @id @default(cuid())
+  name          String
+  email         String?         @unique
+  position      String?
+  photoUrl      String?
+  isActive      Boolean         @default(true)
+  teamId        String?
+  team          Team?           @relation(fields: [teamId], references: [id])
+  createdAt     DateTime        @default(now())
+  
+  dailyWellness DailyWellness[]
+  matchReports  MatchReport[]
+  rehabSessions RehabSession[]
+  messages      Message[]
+  
+  user          User?
+
+  @@map("players")
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  playerId    String
+  coachId     String   // Of teamId, afhankelijk van je User model
+  content     String
+  title       String?  // Pulse title
+  type        String   @default("CHAT") // "CHAT" | "PULSE"
+  actionType  String   @default("NONE") // "NONE" | "CHECKIN" | "MATCH"
+  actionLink  String?  // e.g. "/daily-check-in"
+  actionLabel String?  // e.g. "Start Check-in"
+  validUntil  DateTime? // Pulse expiration date
+  
+  // Linking to completed action
+  linkedDailyWellnessId String? // If actionType was CHECKIN, store result here
+  linkedDailyWellness   DailyWellness? @relation(fields: [linkedDailyWellnessId], references: [id])
+  
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@map("messages")
+}
+
+model Team {
+  id      String   @id @default(cuid())
+  name    String
+  players Player[]
+}
