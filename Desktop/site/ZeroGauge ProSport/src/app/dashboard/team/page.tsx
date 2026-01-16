@@ -1,4 +1,7 @@
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = 'force-dynamic';
+
 import { calculateRisk, Meting } from "@/lib/riskCalculator";
 import ModernDashboardHeader from "@/components/ModernDashboardHeader";
 import {
