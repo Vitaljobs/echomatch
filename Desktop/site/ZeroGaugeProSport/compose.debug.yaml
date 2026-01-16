@@ -1,0 +1,6 @@
+services:
+  zerogaugeprosport:
+    image: zerogaugeprosport
+    build:
+      context: .
+      dockerfile: ./Dockerfile
